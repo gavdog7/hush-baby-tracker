@@ -1,531 +1,424 @@
 # Hush - Implementation Plan
-## Baby Tracker App
-
-Based on PRD v1.0 (January 2026)
-
----
 
 ## Overview
 
-This document outlines the implementation plan for Hush, a radically simplified baby tracking app. The plan is organized into phases that can be executed incrementally, with each phase delivering working functionality.
+This document outlines the implementation plan for Hush, a simplified baby tracking iOS app. The plan is organized into phases, with each phase building on the previous one to deliver incremental value.
 
-**Tech Stack Decision:** SwiftUI (native iOS) with Firebase (Auth + Firestore) for the backend. This provides the best native feel, performance, and real-time sync capabilities.
-
----
-
-## Phase 1: Project Setup & Core Infrastructure
-
-### Objectives
-- Establish project foundation with proper architecture
-- Set up development environment and tooling
-- Create base app structure
-
-### Tasks
-
-1. **Xcode Project Setup**
-   - Create new SwiftUI project targeting iOS 16+
-   - Configure bundle identifier, app icons placeholder
-   - Set up Git repository with .gitignore
-
-2. **Architecture Setup**
-   - Implement MVVM architecture pattern
-   - Create folder structure:
-     ```
-     Hush/
-     ├── App/
-     │   └── HushApp.swift
-     ├── Models/
-     ├── Views/
-     │   ├── Components/
-     │   └── Screens/
-     ├── ViewModels/
-     ├── Services/
-     ├── Utilities/
-     └── Resources/
-     ```
-
-3. **Dependencies**
-   - Add Firebase SDK via Swift Package Manager
-   - Configure Firebase project (dev environment)
-
-4. **Design System Foundation**
-   - Define color palette (light/dark mode)
-     - Sleep: `#B4A7D6` (lavender)
-     - Eat: `#93C47D` (soft green)
-     - Diaper: `#FFD966` (soft amber)
-   - Set up typography using SF Pro
-   - Create reusable button styles
-
-### Deliverable
-Empty app shell with proper architecture, Firebase configured, design tokens defined.
+**Target Platform:** iOS 17+ (SwiftUI)
+**Backend:** Firebase (Auth + Firestore)
+**Architecture:** Offline-first with cloud sync
 
 ---
 
-## Phase 2: Data Layer & Local Storage
+## Phase 1: Foundation & Core Data Layer
 
-### Objectives
-- Implement data models
-- Set up Core Data for offline-first storage
-- Create repository pattern for data access
+### 1.1 Project Setup
+- [ ] Create Xcode project with SwiftUI lifecycle
+- [ ] Configure project structure (MVVM architecture)
+- [ ] Set up Swift Package Manager dependencies
+- [ ] Configure Firebase project and add SDK
+- [ ] Set up development, staging, and production environments
+- [ ] Configure code signing and provisioning profiles
 
-### Tasks
+### 1.2 Data Models
+- [ ] Implement `EventTimestamp` struct with UTC + timezone handling
+- [ ] Implement core entities:
+  - [ ] `User` model
+  - [ ] `Baby` model with settings JSON
+  - [ ] `BabyCaregiver` join model
+  - [ ] `Event` model with polymorphic data (eat/sleep/diaper)
+- [ ] Implement `EatEventData`, `SleepEventData`, `DiaperEventData` structs
+- [ ] Add Codable conformance for all models
 
-1. **Core Data Models**
-   - `CDUser` entity
-   - `CDEvent` entity with event_type enum
-   - Set up Core Data stack with CloudKit container (future-proofing)
-
-2. **Domain Models**
-   ```swift
-   enum EventType: String, Codable {
-       case eat, sleep, diaper
-   }
-
-   struct Event: Identifiable {
-       let id: UUID
-       let babyId: UUID
-       let loggedBy: UUID
-       let eventType: EventType
-       var startTime: Date
-       var endTime: Date?
-       var data: EventData
-       var notes: String?
-   }
-
-   enum EventData {
-       case eat(EatData)
-       case sleep
-       case diaper(DiaperData)
-   }
-
-   struct EatData {
-       var amountPrepared: Double
-       var amountRemaining: Double?
-       var feedingStarted: Date?
-       var bottleMadeAt: Date
-   }
-
-   struct DiaperData {
-       var contents: DiaperContents
-   }
-
-   enum DiaperContents: String {
-       case wet, dirty, both
-   }
-   ```
-
-3. **Repository Layer**
-   - `EventRepository` protocol
-   - `LocalEventRepository` implementation (Core Data)
-   - CRUD operations for events
-
-4. **Unit Preferences**
-   - User defaults for oz/ml preference
-   - Conversion utilities
-
-### Deliverable
-Working local data persistence, can save/load events offline.
+### 1.3 Local Persistence (Core Data)
+- [ ] Create Core Data model (.xcdatamodeld)
+- [ ] Implement Core Data stack with NSPersistentContainer
+- [ ] Create managed object subclasses
+- [ ] Implement repository pattern for data access:
+  - [ ] `EventRepository`
+  - [ ] `BabyRepository`
+  - [ ] `UserRepository`
+- [ ] Add required indexes for performance
+- [ ] Write unit tests for data layer
 
 ---
 
-## Phase 3: Core UI - Timeline View
+## Phase 2: Authentication & User Management
 
-### Objectives
-- Build the main timeline interface
-- Implement scroll behavior and time display
-- Create event visualization
+### 2.1 Firebase Authentication
+- [ ] Implement Sign in with Apple flow
+- [ ] Implement email/password authentication
+- [ ] Create `AuthService` to manage authentication state
+- [ ] Implement secure token storage in Keychain
+- [ ] Handle session persistence (stay logged in)
 
-### Tasks
+### 2.2 User Onboarding
+- [ ] Create minimal onboarding flow:
+  - [ ] Sign in / Sign up screen
+  - [ ] Add baby screen (name + birthdate only)
+- [ ] Implement invite code generation for primary caregiver
+- [ ] Implement invite code redemption for secondary caregivers
 
-1. **Timeline Container**
-   - Vertical scrolling timeline view
-   - 9-hour window (6hr past, 3hr future)
-   - Current time "now" indicator line
-   - Auto-scroll to current time on launch
-
-2. **Time Axis**
-   - Hour markers on left side
-   - Date separators for multi-day view
-   - Smooth scrolling with momentum
-
-3. **Event Blocks**
-   - Color-coded blocks for each event type
-   - Duration-based height for sleep events
-   - Point markers for instant events (diaper)
-   - Semi-transparent blocks for predictions
-
-4. **Event Interaction**
-   - Tap event to select/expand
-   - Basic event card overlay for details
-
-5. **Top Bar**
-   - Profile icon (left) - placeholder for now
-   - Sync status indicator (right) - placeholder
-
-### Deliverable
-Scrollable timeline displaying mock events with correct visual styling.
+### 2.3 User Settings
+- [ ] Create settings data model
+- [ ] Implement settings persistence
+- [ ] Build settings UI (accessed via profile icon):
+  - [ ] Baby info editing
+  - [ ] Caregiver management
+  - [ ] Unit preferences (oz/ml)
+  - [ ] Notification toggles
+  - [ ] Dark mode toggle
 
 ---
 
-## Phase 4: Event Tracking (Eat, Sleep, Diaper)
+## Phase 3: Timeline UI
 
-### Objectives
-- Implement the three action buttons
-- Build event logging flows
-- Enable event editing
+### 3.1 Timeline Foundation
+- [ ] Create `TimelineView` as main container
+- [ ] Implement custom vertical scroll timeline
+- [ ] Add "now" indicator line with current time
+- [ ] Implement 6-hour past / 3-hour future default window
+- [ ] Add date separators for midnight transitions
+- [ ] Implement pull-to-refresh gesture
 
-### Tasks
+### 3.2 Event Rendering
+- [ ] Create `EventBlockView` for timeline events
+- [ ] Implement color coding:
+  - [ ] Sleep: purple (#9B8AA5)
+  - [ ] Eat: green (#7BAE7F)
+  - [ ] Diaper: amber (#E5C07B)
+- [ ] Add event duration labels
+- [ ] Implement tap-to-expand for event details
 
-1. **Action Button Bar**
-   - Three large buttons: EAT | SLEEP | DIAPER
-   - Equal width, 44pt minimum tap target
-   - Haptic feedback on tap
+### 3.3 Active State Display
+- [ ] Implement active sleep indicator:
+  - [ ] Purple block extending to "now" line
+  - [ ] Running duration counter
+  - [ ] Subtle pulse animation
+- [ ] Implement prepared bottle indicator:
+  - [ ] Green bottle icon with expiry countdown
+  - [ ] Color transitions (green → yellow → red → grey)
+- [ ] Implement feeding-in-progress indicator
 
-2. **Quick Log Behavior**
-   - Single tap creates event at current time with defaults
-   - Event card opens for optional editing
-   - Dismiss to save, explicit cancel to discard
+### 3.4 Main Screen Layout
+- [ ] Create top bar with:
+  - [ ] Profile icon (de-emphasized, left)
+  - [ ] Baby name (center, tappable)
+  - [ ] Sync status indicator (right)
+- [ ] Create three action buttons (Eat, Sleep, Diaper)
+- [ ] Integrate timeline view (80% of screen)
+- [ ] Ensure one-handed operation with large tap targets
 
-3. **Eat Event Flow**
-   - Stepper for amount prepared (0.5 oz increments)
-   - Remember last amount as default
-   - "Feeding started" toggle/timestamp
-   - "Amount remaining" stepper (calculates consumption)
-   - Bottle expiry countdown display
+---
 
-4. **Sleep Event Flow**
-   - "Start sleep" creates open-ended event
-   - Active sleep shown on timeline with growing duration
-   - "End sleep" button appears while sleep active
-   - Auto-calculate and display duration
+## Phase 4: Event Logging
 
-5. **Diaper Event Flow**
-   - Quick toggle: Wet / Dirty / Both
-   - Instant log (no duration)
+### 4.1 Quick Log (Happy Path)
+- [ ] Implement single-tap logging with smart defaults
+- [ ] Add haptic feedback on successful log
+- [ ] Show visual confirmation (< 100ms response)
+- [ ] Remember last-used bottle size as default
 
-6. **Event Editing**
-   - Tap timeline event to edit
-   - Adjust all timestamps with date/time picker
-   - Swipe-to-delete gesture
-   - Notes field (optional, collapsed by default)
+### 4.2 Eat (Formula) Tracking
+- [ ] Create bottle preparation flow:
+  - [ ] One-tap to create bottle at "now"
+  - [ ] Stepper for amount (no keyboard)
+- [ ] Implement bottle states:
+  - [ ] Prepared → Feeding → Finished/Expired
+- [ ] Create "Start Feeding" action
+- [ ] Create "Finish Feeding" flow:
+  - [ ] Enter amount remaining
+  - [ ] Auto-calculate consumption
+- [ ] Implement "Discard" action for expired/unused bottles
 
-7. **Time Adjustment UX**
-   - Quick adjustments: "-5m", "-10m", "-15m", "-30m" buttons
-   - Full date/time picker for precise control
+### 4.3 Sleep Tracking
+- [ ] Implement sleep start (one tap)
+- [ ] Implement sleep end (one tap)
+- [ ] Prevent multiple active sleeps:
+  - [ ] Show bottom sheet when tapping Sleep during active sleep
+  - [ ] "End Sleep" and "Cancel" options
+- [ ] Auto-calculate and display duration
 
-### Deliverable
-Fully functional event logging for all three types, editable events.
+### 4.4 Diaper Tracking
+- [ ] Implement one-tap diaper log
+- [ ] Create quick toggle for contents (Wet/Dirty/Both)
+- [ ] Default to "Both" for fastest logging
+
+### 4.5 Event Editing
+- [ ] Create event detail/edit view
+- [ ] Implement time adjustment (all timestamps editable)
+- [ ] Add optional notes field (hidden by default)
+- [ ] Implement swipe-to-delete
+- [ ] Show caregiver attribution in detail view
 
 ---
 
 ## Phase 5: Bottle Expiry System
 
-### Objectives
-- Implement formula safety timers
-- Visual countdown on timeline
-- Optional notifications
+### 5.1 Expiry Timer Logic
+- [ ] Implement expiry calculation:
+  - [ ] 2 hours from preparation (room temp, not fed)
+  - [ ] 1 hour from feeding start
+- [ ] Create `BottleExpiryService`
+- [ ] Handle state transitions for expiry
 
-### Tasks
+### 5.2 Visual Expiry Indicators
+- [ ] Show countdown timer on timeline
+- [ ] Implement color transitions:
+  - [ ] Green: > 30 minutes remaining
+  - [ ] Yellow: 15-30 minutes remaining
+  - [ ] Red: < 15 minutes remaining
+  - [ ] Grey strikethrough: expired
 
-1. **Expiry Calculation**
-   - 2-hour default from bottle preparation
-   - Switch to 1-hour from feeding started (if logged)
-   - Configurable expiry windows in settings
-
-2. **Visual Countdown**
-   - Show remaining time on active bottle events
-   - Color progression: green → yellow (30min) → red (15min) → expired
-
-3. **Expired Bottle Handling**
-   - Visual strikethrough or fade for expired bottles
-   - Keep in history but clearly marked
-
-4. **Notifications** (if time permits)
-   - Local notification at 15min before expiry
-   - Configurable on/off in settings
-
-### Deliverable
-Working bottle expiry system with visual feedback.
+### 5.3 Expiry Notifications
+- [ ] Schedule local notifications at 15 minutes before expiry
+- [ ] Cancel notifications when bottle is finished/discarded
+- [ ] Respect notification settings
 
 ---
 
-## Phase 6: Authentication & Multi-Caregiver
+## Phase 6: Wake Window Predictions
 
-### Objectives
-- Implement user authentication
-- Enable multi-caregiver collaboration
-- Track who logged each event
+### 6.1 Algorithm Implementation
+- [ ] Implement age-based wake window defaults (per PRD table)
+- [ ] Create `WakeWindowPredictor` service
+- [ ] Implement historical average calculation (14-day rolling)
+- [ ] Add time-of-day adjustments
+- [ ] Implement confidence scoring ("high" vs "learning")
 
-### Tasks
+### 6.2 Age Transition Handling
+- [ ] Implement 7-day blending for age threshold transitions
+- [ ] Calculate baby age from birthdate
 
-1. **Firebase Auth Setup**
-   - Email/password authentication
-   - Sign in with Apple
-   - Persistent sessions
-
-2. **Onboarding Flow**
-   - Sign up / Sign in screen
-   - Baby profile creation (name, birthdate)
-   - Skip to local-only mode option
-
-3. **Caregiver Attribution**
-   - Auto-assign logged_by to current user
-   - Display caregiver name in event details (not main timeline)
-
-4. **Invite System**
-   - Primary caregiver generates invite code
-   - Secondary caregiver enters code to join
-   - Deep link support for invite URLs
-
-5. **Permissions**
-   - All caregivers: log, edit events
-   - Primary only: delete baby, remove caregivers
-
-### Deliverable
-Working auth flow, multiple caregivers can join and log events.
+### 6.3 Prediction Display
+- [ ] Show predicted nap window on timeline (semi-transparent)
+- [ ] Display as time range (e.g., "2:30 - 3:00 PM")
+- [ ] Make tappable to show explanation
+- [ ] Generate user-friendly explanation text
 
 ---
 
 ## Phase 7: Cloud Sync
 
-### Objectives
-- Real-time data synchronization
-- Offline-first with background sync
-- Conflict resolution
+### 7.1 Firebase Firestore Integration
+- [ ] Set up Firestore collections and documents
+- [ ] Implement Firestore security rules
+- [ ] Create `SyncService` for bidirectional sync
 
-### Tasks
+### 7.2 Offline-First Architecture
+- [ ] Implement local-first write pattern
+- [ ] Queue changes when offline
+- [ ] Sync automatically when connectivity restored
+- [ ] Show sync status indicator
 
-1. **Firestore Data Structure**
-   ```
-   users/{userId}
-   babies/{babyId}
-   babies/{babyId}/caregivers/{oduserId}
-   babies/{babyId}/events/{eventId}
-   ```
+### 7.3 Conflict Resolution
+- [ ] Implement `ConflictDetector` (per PRD spec)
+- [ ] Detect direct edit conflicts
+- [ ] Detect possible duplicates (events within 5 min)
+- [ ] Create conflict resolution UI:
+  - [ ] Banner for edit conflicts
+  - [ ] Side-by-side comparison for duplicates
+- [ ] Implement resolution actions (Keep Local/Remote/Both/Merge)
 
-2. **Sync Service**
-   - `SyncService` class managing Firestore listeners
-   - Optimistic local updates
-   - Background sync when online
-
-3. **Offline Queue**
-   - Queue local changes when offline
-   - Process queue when connectivity restored
-   - Last-write-wins conflict resolution
-
-4. **Sync Status UI**
-   - Green checkmark: synced
-   - Spinner: syncing
-   - Warning icon: offline/error
-
-5. **Real-time Updates**
-   - Firestore snapshot listeners
-   - Merge remote changes with local state
-   - UI updates automatically
-
-### Deliverable
-Events sync across devices in real-time, works offline.
+### 7.4 Multi-Caregiver Sync
+- [ ] Real-time sync between caregivers
+- [ ] Attribute events to logging caregiver
+- [ ] Handle concurrent edits gracefully
 
 ---
 
-## Phase 8: Wake Window Predictions
+## Phase 8: Quick Stats & Handover Support
 
-### Objectives
-- Implement age-based wake window algorithm
-- Display predictions on timeline
-- Explainable recommendations
+### 8.1 Quick Stats Overlay
+- [ ] Create overlay triggered by tapping baby name
+- [ ] Display:
+  - [ ] Last feed (time + amount)
+  - [ ] Last sleep (duration + when ended)
+  - [ ] Last diaper (time + type)
+  - [ ] Current awake/sleep duration
+- [ ] Dismiss on tap outside or swipe down
 
-### Tasks
-
-1. **Age Calculation**
-   - Calculate baby's age from birthdate
-   - Map to wake window range per PRD table
-
-2. **Prediction Algorithm**
-   - Base prediction on age defaults
-   - Adjust based on last 7 days of actual sleep data
-   - First wake window of day: use lower bound
-   - Last wake window: use upper bound
-
-3. **Timeline Integration**
-   - Show predicted nap window as semi-transparent block
-   - Display as range ("Nap in 1.5-2 hrs")
-   - Update prediction when sleep event logged
-
-4. **Explainability**
-   - Tap prediction to see reasoning
-   - "Based on Eddie's age (4 months) and average wake time this week (1h 45m)"
-
-### Deliverable
-Working wake window predictions displayed on timeline.
+### 8.2 Timeline Optimization for Handover
+- [ ] Ensure 6-hour window shows complete shift history
+- [ ] Highlight active states prominently
+- [ ] Show upcoming predictions clearly
 
 ---
 
-## Phase 9: Settings & Profile
+## Phase 9: Notifications
 
-### Objectives
-- Implement settings screen
-- Profile management
-- Data export
+### 9.1 Local Notifications
+- [ ] Request notification permissions
+- [ ] Implement bottle expiry notification (15 min before)
+- [ ] Implement wake window notification (optional, off by default)
+- [ ] Implement feeding due notification (optional, off by default)
 
-### Tasks
-
-1. **Settings Screen**
-   - Accessed via profile icon
-   - Sheet presentation (maintains one-page feel)
-
-2. **Baby Settings**
-   - Edit name, birthdate
-   - Default bottle size
-   - Unit preference (oz/ml)
-
-3. **Formula Settings**
-   - Expiry window customization
-   - Preparation method notes
-
-4. **App Settings**
-   - Dark mode toggle (system/on/off)
-   - Notification preferences
-
-5. **Caregiver Management**
-   - View current caregivers
-   - Generate new invite code
-   - Remove caregiver (primary only)
-
-6. **Data Export**
-   - CSV generation per PRD spec
-   - Date range selection (24h, 7d, 30d, all)
-   - Copy to clipboard
-   - Share sheet
-
-### Deliverable
-Complete settings with export functionality.
+### 9.2 Notification Management
+- [ ] Respect quiet hours (10pm-6am default)
+- [ ] Allow per-caregiver notification settings
+- [ ] Batch multiple alerts into single notification
 
 ---
 
-## Phase 10: Polish & Launch Prep
+## Phase 10: Data Export
 
-### Objectives
-- UI polish and animations
-- Performance optimization
-- App Store preparation
+### 10.1 CSV Export
+- [ ] Implement CSV generation per PRD format
+- [ ] Include all columns: date, time, event_type, duration, amounts, etc.
+- [ ] Add date range filtering (24h, 7d, 30d, all)
 
-### Tasks
-
-1. **Animations**
-   - Smooth event card expansion
-   - Timeline scroll physics tuning
-   - Button press feedback
-
-2. **Haptics**
-   - Success haptic on event log
-   - Selection haptic on button tap
-   - Warning haptic on expiry alert
-
-3. **Dark Mode Polish**
-   - Test all screens in dark mode
-   - True black backgrounds for OLED
-   - Adjust colors for visibility
-
-4. **Performance**
-   - Profile and optimize timeline rendering
-   - Lazy loading for old events
-   - Memory management for long sessions
-
-5. **Error Handling**
-   - Graceful degradation on network errors
-   - User-friendly error messages
-   - Crash reporting setup (Firebase Crashlytics)
-
-6. **App Store Assets**
-   - App icon (final design)
-   - Screenshots for various device sizes
-   - App Store description
-   - Privacy policy
-
-7. **TestFlight**
-   - Internal testing build
-   - Beta tester recruitment
-   - Feedback collection
-
-### Deliverable
-Production-ready app submitted to App Store.
+### 10.2 Export Options
+- [ ] Implement copy to clipboard
+- [ ] Integrate with iOS share sheet
+- [ ] Include column headers
 
 ---
 
-## Implementation Order & Dependencies
+## Phase 11: Polish & Performance
 
+### 11.1 Dark Mode
+- [ ] Implement dark mode color palette
+- [ ] Use true black (#000000) for OLED
+- [ ] Support system default / always on / always off
+
+### 11.2 Performance Optimization
+- [ ] Profile with Instruments
+- [ ] Ensure cold launch < 1.0 second
+- [ ] Ensure warm launch < 0.3 seconds
+- [ ] Achieve 120fps timeline scrolling
+- [ ] Test with 1,000+ events
+- [ ] Keep memory < 100MB typical
+
+### 11.3 Accessibility
+- [ ] Add VoiceOver labels to all controls
+- [ ] Ensure Dynamic Type support
+- [ ] Test with accessibility inspector
+
+### 11.4 Edge Cases
+- [ ] Handle timezone changes gracefully
+- [ ] Handle DST transitions
+- [ ] Handle midnight/day boundaries
+- [ ] Validate against multiple active sleeps
+- [ ] Validate against multiple active feedings
+
+---
+
+## Phase 12: Testing & Launch Prep
+
+### 12.1 Testing
+- [ ] Unit tests for all services and models
+- [ ] UI tests for critical flows
+- [ ] Performance regression tests in CI
+- [ ] Manual QA checklist
+- [ ] Beta testing via TestFlight
+
+### 12.2 App Store Preparation
+- [ ] Create app icons (all required sizes)
+- [ ] Write App Store description
+- [ ] Create screenshots for all device sizes
+- [ ] Write privacy policy
+- [ ] Submit for App Store review
+
+---
+
+## Technical Architecture
+
+### Project Structure
 ```
-Phase 1 (Setup)
-    ↓
-Phase 2 (Data Layer)
-    ↓
-Phase 3 (Timeline UI)
-    ↓
-Phase 4 (Event Tracking) ←── Core MVP functionality
-    ↓
-Phase 5 (Bottle Expiry)
-    ↓
-Phase 6 (Auth) ←── Required for multi-user
-    ↓
-Phase 7 (Cloud Sync)
-    ↓
-Phase 8 (Predictions)
-    ↓
-Phase 9 (Settings)
-    ↓
-Phase 10 (Polish)
+Hush/
+├── App/
+│   ├── HushApp.swift
+│   └── AppDelegate.swift
+├── Models/
+│   ├── User.swift
+│   ├── Baby.swift
+│   ├── Event.swift
+│   ├── EventTimestamp.swift
+│   └── EventData/
+│       ├── EatEventData.swift
+│       ├── SleepEventData.swift
+│       └── DiaperEventData.swift
+├── Views/
+│   ├── Timeline/
+│   │   ├── TimelineView.swift
+│   │   ├── EventBlockView.swift
+│   │   ├── NowIndicatorView.swift
+│   │   └── PredictionBlockView.swift
+│   ├── Actions/
+│   │   ├── ActionButtonsView.swift
+│   │   ├── EatFlowView.swift
+│   │   ├── SleepFlowView.swift
+│   │   └── DiaperFlowView.swift
+│   ├── Settings/
+│   │   └── SettingsView.swift
+│   ├── Auth/
+│   │   ├── SignInView.swift
+│   │   └── OnboardingView.swift
+│   └── Components/
+│       ├── QuickStatsOverlay.swift
+│       └── SyncIndicator.swift
+├── ViewModels/
+│   ├── TimelineViewModel.swift
+│   ├── EventViewModel.swift
+│   └── SettingsViewModel.swift
+├── Services/
+│   ├── AuthService.swift
+│   ├── SyncService.swift
+│   ├── EventService.swift
+│   ├── WakeWindowPredictor.swift
+│   ├── BottleExpiryService.swift
+│   └── NotificationService.swift
+├── Repositories/
+│   ├── EventRepository.swift
+│   ├── BabyRepository.swift
+│   └── UserRepository.swift
+├── CoreData/
+│   └── Hush.xcdatamodeld
+├── Firebase/
+│   └── GoogleService-Info.plist
+└── Resources/
+    ├── Assets.xcassets
+    └── Localizable.strings
 ```
 
-**Minimum Viable Product (Phases 1-5):** Single-user, offline-only app with core tracking functionality.
+### Key Dependencies
+- **Firebase iOS SDK** - Authentication & Firestore
+- **Core Data** - Local persistence
 
-**Full MVP (Phases 1-9):** Multi-caregiver support with cloud sync.
-
----
-
-## Risk Mitigation
-
-| Risk | Mitigation |
-|------|------------|
-| Timeline performance with many events | Implement virtualized list, limit visible events |
-| Sync conflicts between caregivers | Last-write-wins with timestamp; consider CRDTs post-MVP |
-| Offline reliability | Extensive testing of offline scenarios; queue all operations |
-| Wake window accuracy | Make algorithm transparent; allow manual override |
-| App Store rejection | Follow HIG strictly; no health claims without disclaimers |
+### Design Patterns
+- **MVVM** - View/ViewModel separation
+- **Repository Pattern** - Data access abstraction
+- **Service Layer** - Business logic encapsulation
+- **Offline-First** - Local writes with background sync
 
 ---
 
-## Testing Strategy
+## Success Criteria (MVP)
 
-1. **Unit Tests**
-   - Data models and conversions
-   - Expiry calculations
-   - Wake window algorithm
-
-2. **Integration Tests**
-   - Repository CRUD operations
-   - Sync service behavior
-
-3. **UI Tests**
-   - Event logging flows
-   - Timeline interaction
-   - Settings changes
-
-4. **Manual Testing**
-   - Real-world usage with actual baby schedules
-   - Multi-device sync scenarios
-   - Offline/online transitions
+Per PRD requirements:
+- [ ] Time to first log: < 60 seconds
+- [ ] Average log time: < 3 seconds
+- [ ] Day 7 retention: > 50%
+- [ ] Sync reliability: > 99.5%
+- [ ] App size: < 30MB
+- [ ] Cold launch: < 1.0 second
 
 ---
 
-## Success Criteria (from PRD)
+## Out of Scope (Post-MVP)
 
-- [ ] Time to first log < 60 seconds
-- [ ] Average log time < 3 seconds
-- [ ] Day 7 retention > 50%
-- [ ] Sync reliability > 99.5%
-- [ ] App Store rating target: 4.5+ stars
+Explicitly deferred per PRD:
+- Multi-child support
+- Breastfeeding tracking
+- Solids tracking
+- Paid analytics tier
+- Edit history / undo
+- iOS widgets
+- Apple Watch app
+- Siri shortcuts
+- Android version
+- Baby Brezza integration
 
 ---
 
-*Document created: January 2026*
+*This plan will be updated as implementation progresses.*
