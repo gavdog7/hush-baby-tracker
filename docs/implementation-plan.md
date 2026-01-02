@@ -5,8 +5,21 @@
 This document outlines the implementation plan for Hush, a simplified baby tracking iOS app. The plan is organized into phases, with each phase building on the previous one to deliver incremental value.
 
 **Target Platform:** iOS 17+ (SwiftUI)
+**Target Devices:** iPhone 16 Pro and later (optimized), iPhone 12+ (supported)
 **Backend:** Firebase (Auth + Firestore)
 **Architecture:** Offline-first with cloud sync
+
+---
+
+## Critical Review Notes
+
+*Last reviewed: January 2026*
+
+This implementation plan has been critically reviewed against the PRD v1.1. Key alignment items:
+- Phase ordering prioritizes core functionality before polish
+- Performance and dark mode are addressed early (essential for nighttime use)
+- All PRD-specified validations and edge cases are captured
+- Success metrics and out-of-scope items match PRD exactly
 
 ---
 
@@ -24,6 +37,8 @@ This document outlines the implementation plan for Hush, a simplified baby track
 - [ ] Implement `EventTimestamp` struct with UTC + timezone handling:
   - Store `utc: Date`, `timezoneIdentifier: String`, `offsetSeconds: Int`
   - Implement `localDisplay` computed property for original timezone display
+  - Historical events display in timezone where they occurred (not shifted to current timezone)
+  - Multi-caregiver: each caregiver sees events in their own timezone for new events
 - [ ] Implement core entities:
   - [ ] `User` model (id, email, display_name, created_at)
   - [ ] `Baby` model with settings JSON (id, name, birth_date, primary_caregiver_id, settings, created_at)
@@ -47,7 +62,7 @@ This document outlines the implementation plan for Hush, a simplified baby track
   - [ ] `UserRepository`
 - [ ] Add required indexes for performance:
   - [ ] `idx_events_baby_time` (baby_id, start_time DESC)
-  - [ ] `idx_events_baby_active` (baby_id, event_type, end_time) WHERE end_time IS NULL
+  - [ ] `idx_events_baby_active` (baby_id, event_type, end_time) WHERE end_time IS NULL AND deleted_at IS NULL
   - [ ] `idx_events_updated` (baby_id, updated_at DESC)
   - [ ] `idx_baby_caregiver` (user_id, baby_id)
 - [ ] Write unit tests for data layer
@@ -113,10 +128,10 @@ This document outlines the implementation plan for Hush, a simplified baby track
   - [ ] Profile icon (de-emphasized, left)
   - [ ] Baby name (center, tappable for quick stats)
   - [ ] Sync status indicator (right)
-- [ ] Create action buttons row (~12% of screen):
+- [ ] Create action buttons row (~12-15% of screen):
   - [ ] Three equal-width buttons: EAT | SLEEP | DIAPER
   - [ ] Large tap targets for one-handed operation
-- [ ] Create timeline container (~80% of screen)
+- [ ] Create timeline container (~75-80% of screen per PRD)
 - [ ] Ensure one-handed operation with large tap targets
 
 ### 3.2 Timeline Foundation
@@ -150,12 +165,16 @@ This document outlines the implementation plan for Hush, a simplified baby track
 - [ ] Implement prepared bottle indicator (not yet feeding):
   - [ ] Green bottle icon pinned near "now" line
   - [ ] Countdown timer: "Expires in 1h 42m"
-  - [ ] Color transitions: green → yellow (30min) → red (15min) → grey strikethrough (expired)
+  - [ ] Color transitions (consistent with Phase 5.2):
+    - [ ] Green: > 30 minutes remaining
+    - [ ] Yellow: 15-30 minutes remaining
+    - [ ] Red: < 15 minutes remaining
+    - [ ] Grey strikethrough: expired
   - [ ] Tap to show: "Start Feeding" / "Discard" / "Edit"
 - [ ] Implement feeding-in-progress indicator:
   - [ ] Pulsing green indicator at "now" line
   - [ ] Shows: "Feeding (started 12 min ago)"
-  - [ ] Expiry countdown based on feeding start time
+  - [ ] Expiry countdown based on feeding start time (1 hour from feeding start)
 - [ ] Implement 30-minute prepared bottle reminder:
   - [ ] Subtle visual reminder on timeline if bottle prepared but feeding hasn't started
 
@@ -173,15 +192,18 @@ This document outlines the implementation plan for Hush, a simplified baby track
 - [ ] Create bottle preparation flow:
   - [ ] One-tap to create bottle at "now"
   - [ ] Stepper for amount (+ and - buttons, no keyboard)
+  - [ ] Remember last-used bottle size as default
 - [ ] Implement bottle states with state derivation:
-  - [ ] Prepared (feeding_started_at == null)
+  - [ ] Prepared (feeding_started_at == null, room temp)
+  - [ ] Refrigerated (feeding_started_at == null, marked as refrigerated in settings)
   - [ ] Feeding (feeding_started_at != null && end_time == null)
   - [ ] Finished (end_time != null)
-  - [ ] Expired (time limit exceeded)
+  - [ ] Expired (time limit exceeded based on state)
 - [ ] Create "Start Feeding" action
 - [ ] Create "Finish Feeding" flow:
   - [ ] User enters amount REMAINING
   - [ ] App auto-calculates consumption (amount_prepared - amount_remaining)
+  - [ ] Display calculated consumption for user confirmation before saving
 - [ ] Implement "Discard" action for expired/unused bottles
 
 ### 4.3 Sleep Tracking
@@ -249,6 +271,7 @@ This document outlines the implementation plan for Hush, a simplified baby track
 - [ ] Implement historical average calculation (14-day rolling):
   - [ ] Only include "successful" sleeps (duration >= 20 minutes)
   - [ ] Require minimum 5 data points for personalization
+  - [ ] Clamp personalized range to 0.8x-1.2x of age-based bounds
 - [ ] Implement time-of-day adjustments:
   - [ ] Before 9 AM: 0.9x adjustment (shorter)
   - [ ] After 5 PM: 1.1x adjustment (longer)
@@ -256,6 +279,10 @@ This document outlines the implementation plan for Hush, a simplified baby track
 - [ ] Implement confidence scoring:
   - [ ] "high" if >= 10 recent wake windows
   - [ ] "learning" otherwise
+- [ ] Implement accuracy feedback loop (per PRD):
+  - [ ] Track "Prediction Hit Rate" — percentage of naps starting within predicted window
+  - [ ] If accuracy drops below 60% for a baby, show "learning" indicator
+  - [ ] Expand predicted ranges when accuracy is low
 
 ### 6.2 Age Transition Handling
 - [ ] Calculate baby age from birthdate
@@ -315,7 +342,14 @@ This document outlines the implementation plan for Hush, a simplified baby track
   - [ ] Keep Local / Keep Remote / Keep Both / Merge (latest non-null fields)
 - [ ] Design principle: Never lose data silently
 
-### 7.4 Multi-Caregiver Sync
+### 7.4 Active State Validation During Sync
+- [ ] Validate active states when syncing from remote:
+  - [ ] If remote has active sleep and local has different active sleep, treat as conflict
+  - [ ] If remote has active feeding and local has different active feeding, treat as conflict
+- [ ] Use same validation logic as local data layer (Phase 1.4)
+- [ ] Present conflicts to user rather than silently accepting invalid states
+
+### 7.5 Multi-Caregiver Sync
 - [ ] Real-time sync between caregivers
 - [ ] Attribute events to logging caregiver
 - [ ] Handle concurrent edits gracefully
@@ -351,6 +385,8 @@ This document outlines the implementation plan for Hush, a simplified baby track
 
 ### 9.2 Notification Management
 - [ ] Implement quiet hours (10pm-6am default, configurable)
+  - [ ] Respect user's timezone for quiet hours calculation
+  - [ ] Handle DST transitions correctly (quiet hours should be consistent local time)
 - [ ] Allow per-caregiver notification settings
 - [ ] Batch multiple alerts into single notification
 - [ ] Ensure all notifications lead to clear actions
@@ -491,7 +527,7 @@ This document outlines the implementation plan for Hush, a simplified baby track
 Hush/
 ├── App/
 │   ├── HushApp.swift
-│   └── AppDelegate.swift
+│   └── AppDelegate.swift          # For push notification handling (UIApplicationDelegate adapter)
 ├── Models/
 │   ├── User.swift
 │   ├── Baby.swift
@@ -597,6 +633,7 @@ Explicitly deferred per PRD:
 - Siri shortcuts
 - Android version
 - Baby Brezza integration
+- "Active caregiver" mode (where only one person receives notifications)
 
 ---
 
