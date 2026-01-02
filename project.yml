@@ -1,0 +1,91 @@
+name: Hush
+options:
+  bundleIdPrefix: com.hush
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+    INFOPLIST_KEY_UILaunchScreen_Generation: YES
+    INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+    INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    ENABLE_PREVIEWS: YES
+
+targets:
+  Hush:
+    type: application
+    platform: iOS
+    sources:
+      - path: Hush
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hush.app
+        INFOPLIST_KEY_CFBundleDisplayName: Hush
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        PRODUCT_NAME: Hush
+        SWIFT_EMIT_LOC_STRINGS: YES
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSUserTrackingUsageDescription: "Hush uses anonymous analytics to improve the app experience."
+    entitlements:
+      path: Hush/Hush.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default
+    postCompileScripts:
+      - script: |
+          # SwiftLint if available
+          if which swiftlint > /dev/null; then
+            swiftlint
+          fi
+        name: SwiftLint
+        basedOnDependencyAnalysis: false
+
+  HushTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: HushTests
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hush.app.tests
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: ""
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Hush
+
+schemes:
+  Hush:
+    build:
+      targets:
+        Hush: all
+        HushTests: [test]
+    run:
+      config: Debug
+      environmentVariables:
+        - variable: IDEPreferLogStreaming
+          value: "YES"
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - HushTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
