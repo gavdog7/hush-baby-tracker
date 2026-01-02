@@ -13,13 +13,26 @@ This document outlines the implementation plan for Hush, a simplified baby track
 
 ## Critical Review Notes
 
-*Last reviewed: January 2026*
+*Last reviewed: January 3, 2026*
 
-This implementation plan has been critically reviewed against the PRD v1.1. Key alignment items:
-- Phase ordering prioritizes core functionality before polish
-- Performance and dark mode are addressed early (essential for nighttime use)
-- All PRD-specified validations and edge cases are captured
-- Success metrics and out-of-scope items match PRD exactly
+This implementation plan has been critically reviewed against the PRD v1.1.
+
+### Review Status
+- ✅ Phase ordering prioritizes core functionality before polish
+- ✅ All PRD-specified validations and edge cases are captured
+- ✅ Success metrics and out-of-scope items match PRD exactly
+- ✅ Dark mode integrated into Phase 3 (essential for nighttime use)
+- ✅ Performance requirements embedded throughout, with dedicated validation in Phase 13
+- ✅ Active state validation during sync addressed in Phase 7.4
+- ✅ Prediction accuracy tracking and feedback loop specified in Phase 6.1
+
+### Phase Summary
+This plan contains 15 phases organized for incremental delivery:
+- Phases 1-4: Core data and event logging (MVP foundation)
+- Phases 5-6: Smart features (expiry, predictions)
+- Phases 7-9: Sync, stats, notifications
+- Phases 10-11: Export, privacy, security
+- Phases 12-15: Polish, performance, edge cases, launch
 
 ---
 
@@ -45,7 +58,7 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
   - [ ] `BabyCaregiver` join model (baby_id, user_id, role enum: primary/caregiver, joined_at)
   - [ ] `Event` model with polymorphic data (id, baby_id, logged_by, event_type, start_time, end_time, data JSON, notes, created_at, updated_at, deleted_at)
 - [ ] Implement event data structs:
-  - [ ] `EatEventData` (amount_prepared, amount_remaining, feeding_started_at)
+  - [ ] `EatEventData` (amount_prepared, amount_remaining, feeding_started_at, is_refrigerated)
   - [ ] `SleepEventData` (empty—timing in parent Event)
   - [ ] `DiaperEventData` (contents: wet/dirty/both)
 - [ ] Add Codable conformance for all models
@@ -128,11 +141,15 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
   - [ ] Profile icon (de-emphasized, left)
   - [ ] Baby name (center, tappable for quick stats)
   - [ ] Sync status indicator (right)
-- [ ] Create action buttons row (~12-15% of screen):
+- [ ] Create action buttons row (~12% of screen):
   - [ ] Three equal-width buttons: EAT | SLEEP | DIAPER
   - [ ] Large tap targets for one-handed operation
-- [ ] Create timeline container (~75-80% of screen per PRD)
+- [ ] Create timeline container (~80% of screen per PRD)
 - [ ] Ensure one-handed operation with large tap targets
+- [ ] Implement dark mode support from the start:
+  - [ ] Define semantic colors for light/dark themes
+  - [ ] Use true black (#000000) for dark mode backgrounds (OLED optimization)
+  - [ ] Ensure all UI elements respect dark mode setting
 
 ### 3.2 Timeline Foundation
 - [ ] Create `TimelineView` as main container
@@ -148,13 +165,17 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
 
 ### 3.3 Event Rendering
 - [ ] Create `EventBlockView` for timeline events
-- [ ] Implement color coding:
-  - [ ] Sleep: soft purple (#9B8AA5)
-  - [ ] Eat: soft green (#7BAE7F)
-  - [ ] Diaper: soft amber (#E5C07B)
+- [ ] Implement color coding (with dark mode variants):
+  - [ ] Sleep: soft purple (#9B8AA5), dark mode: reduced brightness
+  - [ ] Eat: soft green (#7BAE7F), dark mode: reduced brightness
+  - [ ] Diaper: soft amber (#E5C07B), dark mode: reduced brightness
 - [ ] Add event duration labels
 - [ ] Implement tap-to-expand for event details
 - [ ] Show caregiver attribution in expanded details
+- [ ] Create `PredictionBlockView` for future predictions:
+  - [ ] Use same colors at ~30% opacity
+  - [ ] Display as time range (e.g., "2:30 - 3:00 PM") with "Nap window" label
+  - [ ] Implement tap-to-show-explanation (displays algorithm rationale)
 
 ### 3.4 Active State Display
 - [ ] Implement active sleep indicator:
@@ -175,8 +196,11 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
   - [ ] Pulsing green indicator at "now" line
   - [ ] Shows: "Feeding (started 12 min ago)"
   - [ ] Expiry countdown based on feeding start time (1 hour from feeding start)
-- [ ] Implement 30-minute prepared bottle reminder:
-  - [ ] Subtle visual reminder on timeline if bottle prepared but feeding hasn't started
+- [ ] Implement 30-minute prepared bottle reminder (per PRD 4.3):
+  - [ ] Track time since bottle preparation
+  - [ ] After 30 minutes without feeding started, show subtle visual indicator on timeline
+  - [ ] Visual only (not a push notification) - e.g., amber highlight or "Waiting..." label
+  - [ ] Clear reminder when feeding starts or bottle is discarded
 
 ---
 
@@ -194,11 +218,14 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
   - [ ] Stepper for amount (+ and - buttons, no keyboard)
   - [ ] Remember last-used bottle size as default
 - [ ] Implement bottle states with state derivation:
-  - [ ] Prepared (feeding_started_at == null, room temp)
-  - [ ] Refrigerated (feeding_started_at == null, marked as refrigerated in settings)
-  - [ ] Feeding (feeding_started_at != null && end_time == null)
-  - [ ] Finished (end_time != null)
-  - [ ] Expired (time limit exceeded based on state)
+  - [ ] Prepared (feeding_started_at == null, room temp) - 2 hour expiry
+  - [ ] Refrigerated (feeding_started_at == null, marked as refrigerated) - configurable up to 24 hours
+  - [ ] Feeding (feeding_started_at != null && end_time == null) - 1 hour from feeding start
+  - [ ] Finished (end_time != null) - no expiry tracking needed
+  - [ ] Expired (time limit exceeded based on state) - grey strikethrough display
+- [ ] Store refrigerated flag in EatEventData:
+  - [ ] Add `is_refrigerated: Bool` field
+  - [ ] Read user's refrigerated expiry preference from settings
 - [ ] Create "Start Feeding" action
 - [ ] Create "Finish Feeding" flow:
   - [ ] User enters amount REMAINING
@@ -279,10 +306,19 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
 - [ ] Implement confidence scoring:
   - [ ] "high" if >= 10 recent wake windows
   - [ ] "learning" otherwise
-- [ ] Implement accuracy feedback loop (per PRD):
+- [ ] Implement accuracy feedback loop (per PRD Section 15):
+  - [ ] Create `PredictionAccuracy` data model to store:
+    - [ ] `prediction_id`: UUID
+    - [ ] `baby_id`: UUID
+    - [ ] `predicted_range_start`: Timestamp
+    - [ ] `predicted_range_end`: Timestamp
+    - [ ] `actual_sleep_start`: Timestamp (filled when sleep logged)
+    - [ ] `was_hit`: Bool (actual within predicted range)
   - [ ] Track "Prediction Hit Rate" — percentage of naps starting within predicted window
+  - [ ] Calculate rolling 14-day accuracy percentage
   - [ ] If accuracy drops below 60% for a baby, show "learning" indicator
-  - [ ] Expand predicted ranges when accuracy is low
+  - [ ] Expand predicted ranges by 1.2x when accuracy is low
+  - [ ] Target: > 70% of naps fall within predicted range after 2 weeks of use
 
 ### 6.2 Age Transition Handling
 - [ ] Calculate baby age from birthdate
@@ -342,7 +378,8 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
   - [ ] Keep Local / Keep Remote / Keep Both / Merge (latest non-null fields)
 - [ ] Design principle: Never lose data silently
 
-### 7.4 Active State Validation During Sync
+### 7.4 Active State Validation During Sync (Critical)
+**Rationale:** Remote events can create invalid states (e.g., multiple active sleeps) that must be caught during sync, not after.
 - [ ] Validate active states when syncing from remote:
   - [ ] If remote has active sleep and local has different active sleep, treat as conflict
   - [ ] If remote has active feeding and local has different active feeding, treat as conflict
@@ -384,9 +421,14 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
 - [ ] Implement feeding due notification (3 hours since last feed, default: OFF)
 
 ### 9.2 Notification Management
-- [ ] Implement quiet hours (10pm-6am default, configurable)
-  - [ ] Respect user's timezone for quiet hours calculation
-  - [ ] Handle DST transitions correctly (quiet hours should be consistent local time)
+- [ ] Implement quiet hours (10pm-6am default, configurable):
+  - [ ] Store quiet hours as local time values (not UTC)
+  - [ ] Use user's current timezone to determine if current time is within quiet hours
+  - [ ] Handle DST transitions correctly:
+    - [ ] Quiet hours should be consistent local time (10pm is always 10pm local)
+    - [ ] When DST changes, recalculate notification schedules
+    - [ ] Test edge case: notification scheduled for 2:30am during spring forward
+  - [ ] Allow per-caregiver quiet hours customization
 - [ ] Allow per-caregiver notification settings
 - [ ] Batch multiple alerts into single notification
 - [ ] Ensure all notifications lead to clear actions
@@ -448,13 +490,16 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
 
 ---
 
-## Phase 12: Dark Mode & Polish
+## Phase 12: Dark Mode Refinement & Polish
 
-### 12.1 Dark Mode
-- [ ] Implement dark mode color palette
-- [ ] Use true black (#000000) for OLED screens
-- [ ] Adjust event colors for reduced brightness while maintaining hue relationships
-- [ ] Support system default / always on / always off
+### 12.1 Dark Mode Refinement
+**Note:** Dark mode foundation is implemented in Phase 3.1. This phase focuses on refinement and edge cases.
+- [ ] Audit all screens for dark mode consistency
+- [ ] Verify true black (#000000) is used consistently for OLED optimization
+- [ ] Fine-tune event colors for optimal dark mode contrast
+- [ ] Test color transitions (expiry warnings) in dark mode
+- [ ] Verify all icons and assets have dark mode variants
+- [ ] Test with iOS system dark mode toggle
 
 ### 12.2 Accessibility
 - [ ] Add VoiceOver labels to all controls
@@ -464,15 +509,23 @@ This implementation plan has been critically reviewed against the PRD v1.1. Key 
 
 ---
 
-## Phase 13: Performance Optimization
+## Phase 13: Performance Validation
 
-### 13.1 Performance Targets
+**Note:** Performance is a cross-cutting concern addressed throughout development:
+- Phase 1.3: Database indexes for query performance
+- Phase 3.2: Timeline rendering optimization
+- Phase 4.1: < 100ms event logging response time
+
+This phase validates all performance targets are met before launch.
+
+### 13.1 Performance Targets (Validation)
 - [ ] Profile with Instruments before each release
-- [ ] Achieve cold launch < 1.0 second to interactive timeline
-- [ ] Achieve warm launch < 0.3 seconds
-- [ ] Achieve 120fps timeline scrolling (ProMotion)
-- [ ] Achieve event logging < 100ms from tap to visual confirmation
+- [ ] Validate cold launch < 1.0 second to interactive timeline
+- [ ] Validate warm launch < 0.3 seconds
+- [ ] Validate 120fps timeline scrolling (ProMotion)
+- [ ] Validate event logging < 100ms from tap to visual confirmation
 - [ ] Test with 1,000+ events to ensure timeline remains responsive
+- [ ] Set up automated performance regression tests in CI
 
 ### 13.2 Resource Limits
 - [ ] Keep memory < 100MB typical, < 200MB peak
