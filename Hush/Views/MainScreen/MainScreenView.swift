@@ -1,9 +1,14 @@
 import SwiftUI
 
 struct MainScreenView: View {
+    @Environment(AuthService.self) private var authService
     @State private var viewModel = TimelineViewModel()
     @State private var showSettings = false
     @State private var showQuickStats = false
+    @State private var showOnboarding = false
+    @State private var napPrediction: NapPrediction?
+
+    private let wakeWindowPredictor = WakeWindowPredictor()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,15 +26,25 @@ struct MainScreenView: View {
                 onDiaperTapped: viewModel.onDiaperTapped
             )
 
-            TimelineView(viewModel: viewModel)
+            TimelineView(viewModel: viewModel, napPrediction: napPrediction)
         }
         .background(Color.darkBackground)
         .task {
-            await setupDemoData()
+            await loadBaby()
             await viewModel.loadEvents()
+            updatePrediction()
         }
         .sheet(isPresented: $showSettings) {
-            SettingsPlaceholderView()
+            SettingsView()
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingView { baby in
+                viewModel.currentBaby = baby
+                viewModel.currentUserId = baby.primaryCaregiverId
+                showOnboarding = false
+                Task { await viewModel.loadEvents() }
+                updatePrediction()
+            }
         }
         .overlay {
             if showQuickStats, let baby = viewModel.currentBaby {
@@ -64,6 +79,7 @@ struct MainScreenView: View {
                 Button("End Sleep") {
                     viewModel.eventService.endSleep(event: sleep)
                     Task { await viewModel.loadEvents() }
+                    updatePrediction()
                 }
             }
             Button("Cancel", role: .cancel) {}
@@ -72,64 +88,55 @@ struct MainScreenView: View {
                 Text("Duration: \(duration)")
             }
         }
+        .onChange(of: viewModel.events) { _, _ in
+            updatePrediction()
+        }
     }
 
-    // Temporary: Create demo baby for testing
-    private func setupDemoData() async {
+    private func loadBaby() async {
         let babyRepo = BabyRepository()
-        let userRepo = UserRepository()
 
-        // Check if we already have a baby
+        // Try to load existing baby
         if let existingBaby = try? babyRepo.fetchFirstBaby() {
             viewModel.currentBaby = existingBaby
-            viewModel.currentUserId = existingBaby.primaryCaregiverId
+            viewModel.currentUserId = authService.currentUser?.id ?? existingBaby.primaryCaregiverId
             return
         }
 
-        // Create demo user and baby
-        let user = User(
-            email: "demo@example.com",
-            displayName: "Demo User"
-        )
-        _ = try? userRepo.createOrUpdate(user)
-        viewModel.currentUserId = user.id
-
-        let baby = Baby(
-            name: "Emma",
-            birthDate: Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date(),
-            primaryCaregiverId: user.id
-        )
-        _ = try? babyRepo.create(baby)
-        viewModel.currentBaby = baby
+        // No baby exists, show onboarding
+        showOnboarding = true
     }
-}
 
-// MARK: - Placeholder Views
+    private func updatePrediction() {
+        guard let baby = viewModel.currentBaby else {
+            napPrediction = nil
+            return
+        }
 
-struct SettingsPlaceholderView: View {
-    @Environment(\.dismiss) var dismiss
+        // Find last wake time (end of last sleep, or start of baby tracking)
+        let lastWakeTime: Date
 
-    var body: some View {
-        NavigationStack {
-            List {
-                Section("Baby") {
-                    Text("Name: Emma")
-                    Text("Age: 3 months")
-                }
-                Section("Settings") {
-                    Text("Default bottle size: 4 oz")
-                    Text("Units: Imperial (oz)")
-                }
-            }
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
+        if let lastSleep = viewModel.sleepEvents.first(where: { $0.endTime != nil }),
+           let endTime = lastSleep.endTime {
+            lastWakeTime = endTime.utc
+        } else {
+            // No sleep data, use 2 hours ago as default
+            lastWakeTime = Date().addingTimeInterval(-2 * 3600)
+        }
+
+        // Only predict if baby is awake
+        if viewModel.isSleeping {
+            napPrediction = nil
+        } else {
+            napPrediction = wakeWindowPredictor.predictNextNap(
+                baby: baby,
+                lastWakeTime: lastWakeTime
+            )
         }
     }
 }
+
+// MARK: - Quick Stats Overlay
 
 struct QuickStatsOverlay: View {
     let baby: Baby
@@ -147,7 +154,12 @@ struct QuickStatsOverlay: View {
                     .font(.title2)
                     .fontWeight(.semibold)
 
+                Text(baby.ageDisplay)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
                 VStack(alignment: .leading, spacing: 12) {
+                    // Current state
                     if viewModel.isSleeping {
                         StatRow(
                             label: "Current state",
@@ -156,36 +168,65 @@ struct QuickStatsOverlay: View {
                             color: .sleep
                         )
                     } else {
+                        let awakeTime = calculateAwakeTime()
                         StatRow(
                             label: "Current state",
-                            value: "Awake",
+                            value: "Awake for \(awakeTime)",
                             icon: "sun.max.fill",
                             color: .orange
                         )
                     }
 
-                    // Placeholder stats - would come from actual data
-                    StatRow(
-                        label: "Last feed",
-                        value: "1h ago (3.5 oz)",
-                        icon: "fork.knife",
-                        color: .eat
-                    )
+                    // Last feed
+                    if let lastFeed = viewModel.eatEvents.first {
+                        let timeAgo = lastFeed.startTime.relativeDisplay
+                        let amount = lastFeed.data.eatData?.amountConsumedOz ?? lastFeed.data.eatData?.amountPreparedOz ?? 0
+                        StatRow(
+                            label: "Last feed",
+                            value: "\(timeAgo) (\(String(format: "%.1f", amount)) oz)",
+                            icon: "fork.knife",
+                            color: .eat
+                        )
+                    }
 
-                    StatRow(
-                        label: "Last diaper",
-                        value: "45m ago (wet)",
-                        icon: "humidity.fill",
-                        color: .diaper
-                    )
+                    // Last diaper
+                    if let lastDiaper = viewModel.diaperEvents.first {
+                        let timeAgo = lastDiaper.startTime.relativeDisplay
+                        let contents = lastDiaper.data.diaperData?.contents.displayName.lowercased() ?? "diaper"
+                        StatRow(
+                            label: "Last diaper",
+                            value: "\(timeAgo) (\(contents))",
+                            icon: "humidity.fill",
+                            color: .diaper
+                        )
+                    }
+
+                    // Last sleep
+                    if let lastSleep = viewModel.sleepEvents.first(where: { $0.endTime != nil }) {
+                        StatRow(
+                            label: "Last sleep",
+                            value: "\(lastSleep.durationDisplay) (ended \(lastSleep.endTime?.relativeDisplay ?? ""))",
+                            icon: "moon.fill",
+                            color: .sleep
+                        )
+                    }
                 }
                 .padding()
             }
-            .frame(maxWidth: 300)
+            .frame(maxWidth: 320)
             .background(.regularMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(radius: 20)
         }
+    }
+
+    private func calculateAwakeTime() -> String {
+        guard let lastSleep = viewModel.sleepEvents.first(where: { $0.endTime != nil }),
+              let endTime = lastSleep.endTime else {
+            return "a while"
+        }
+
+        return EventTimestamp.formatDuration(endTime.durationUntilNow)
     }
 }
 
@@ -216,4 +257,5 @@ struct StatRow: View {
 
 #Preview {
     MainScreenView()
+        .environment(AuthService())
 }

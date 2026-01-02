@@ -7,6 +7,11 @@ options:
   generateEmptyDirectories: true
   groupSortPosition: top
 
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    version: 11.6.0
+
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -42,6 +47,11 @@ targets:
       properties:
         com.apple.developer.applesignin:
           - Default
+    dependencies:
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
     postCompileScripts:
       - script: |
           # SwiftLint if available

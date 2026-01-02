@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TimelineView: View {
     let viewModel: TimelineViewModel
+    var napPrediction: NapPrediction?
 
     var body: some View {
         GeometryReader { geometry in
@@ -13,6 +14,16 @@ struct TimelineView: View {
 
                         // Events layer
                         EventsLayer(viewModel: viewModel, height: geometry.size.height * 1.5)
+
+                        // Prediction layer (in future section)
+                        if let prediction = napPrediction, prediction.isFuture || prediction.isActive {
+                            PredictionBlockView(
+                                prediction: prediction,
+                                viewModel: viewModel,
+                                totalHeight: geometry.size.height * 1.5
+                            )
+                            .padding(.leading, 55)
+                        }
 
                         // Now indicator
                         NowIndicatorView()
@@ -326,6 +337,67 @@ struct PreparedBottleIndicator: View {
     }
 }
 
+// MARK: - Prediction Block
+
+struct PredictionBlockView: View {
+    let prediction: NapPrediction
+    let viewModel: TimelineViewModel
+    let totalHeight: CGFloat
+
+    @State private var showExplanation = false
+
+    var body: some View {
+        let startY = totalHeight * viewModel.position(for: prediction.predictedStart)
+        let endY = totalHeight * viewModel.position(for: prediction.predictedEnd)
+        let blockHeight = startY - endY
+
+        Button(action: { showExplanation.toggle() }) {
+            VStack(spacing: 4) {
+                HStack(spacing: 4) {
+                    Image(systemName: "sparkles")
+                        .font(.caption2)
+                    Text("Nap window")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                }
+
+                Text(prediction.timeRangeDisplay)
+                    .font(.caption)
+
+                if showExplanation {
+                    Text(prediction.explanation)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 4)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: prediction.confidence.icon)
+                        Text(prediction.confidence.displayText)
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .frame(height: max(50, blockHeight), alignment: .center)
+            .background(Color.sleep.opacity(0.15))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(
+                        Color.sleep.opacity(0.3),
+                        style: StrokeStyle(lineWidth: 1, dash: [5, 3])
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .offset(y: endY)
+    }
+}
+
 #Preview {
-    TimelineView(viewModel: TimelineViewModel())
+    TimelineView(viewModel: TimelineViewModel(), napPrediction: nil)
 }
