@@ -9,13 +9,33 @@
 /* Begin PBXBuildFile section */
 		0471DF0151A8E7D0655A28A3 /* MainScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBACE11B7F7E810242BA2E4 /* MainScreenView.swift */; };
 		0711386FD6E559198B2CED6F /* ActionButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428EFFA032B82FE1AEDEE763 /* ActionButtonsView.swift */; };
+		13545C804CD3F468ABB3017A /* CDBabyCaregiver+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8532121F683C4C1ED8F4692 /* CDBabyCaregiver+CoreDataClass.swift */; };
 		21C3141F92CA45517EAAEAD3 /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58BBEC95A4D7F9F084F9CA1 /* TopBarView.swift */; };
+		33D4C6A16F34C08FB6CA63A4 /* TimelineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A42F1BFF42D3ED6BF961B05 /* TimelineViewModel.swift */; };
+		354673E3B8BCA689947B3ACB /* SleepValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38EBCD9DB048C1B19912F20B /* SleepValidator.swift */; };
+		383B07A4D1C719680CA19F65 /* EventService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F5C0E7785826152626B6962 /* EventService.swift */; };
 		4924575F57311D0174B54382 /* NowIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37257CF81E2F9FD6F0D99742 /* NowIndicatorView.swift */; };
+		5F68629D137697AAD40FE30B /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BAF7EF82C9A33752FD8CBA /* UserRepository.swift */; };
+		62E4A0C9E3D4967F8B45FFBA /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468FEF461A46DB1FC52C7C98 /* User.swift */; };
 		64DF8B7178957B8FFD49B0A8 /* HushTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C498D206E0AF6B2EDDF628E0 /* HushTests.swift */; };
+		64E34A4D60FFD1939BA01AA5 /* CDUser+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46168FFCAA59EC5DE16F2AE1 /* CDUser+CoreDataClass.swift */; };
 		679E7FB1E5248F080E391BB7 /* HushApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D1B08BB3FA88A4437C63DB5 /* HushApp.swift */; };
 		688C6838B9E0A9D53BC17C3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2B81F4EFE445757CB15C338 /* Assets.xcassets */; };
+		7ACB5328872BF05792520D92 /* CDEvent+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5668848D5B607A9DF8642FE1 /* CDEvent+CoreDataClass.swift */; };
+		8CFE6E9BB224D2705603140A /* BabyRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4E2ECD8E2FD1B5759985BB9 /* BabyRepository.swift */; };
+		9EBF9CD47AF645D6D7E3D433 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB94852F433CB77C5AFC3815 /* PersistenceController.swift */; };
+		B2FD08373D62BF6938ED6576 /* EventRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D4EE7FA9F8E84D96390C4D7 /* EventRepository.swift */; };
+		B5E4DA54E3F3B3A1F03E3A54 /* DiaperEventData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2598B5112EAC69F530BEB9ED /* DiaperEventData.swift */; };
+		BBC70BFE38340D377A134D91 /* Hush.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = A468B3FA925E20F530D59C6B /* Hush.xcdatamodeld */; };
+		CEEAB8DDDCDA870F61C36385 /* EventTimestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7376000B8C8AB2D0811F79B1 /* EventTimestamp.swift */; };
+		CF01D0D4B5111133AE881CE4 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BAE033A7A119A32904D9C3E /* Event.swift */; };
+		D63905EFB1FC9B9704535B23 /* SleepEventData.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCFC4DEB0088DAF9902F6CB /* SleepEventData.swift */; };
 		D80FF656CCB3C344B576AF5C /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5275A62EB66F2174B229D4EF /* Colors.swift */; };
+		DCFF0C741194AA983D5D2AC3 /* CDBaby+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965B18386BA65FCFA4D5A60B /* CDBaby+CoreDataClass.swift */; };
+		E15B9408B5F53DE7F3145DA9 /* FeedingValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17CFCB90BA0856A8299E2815 /* FeedingValidator.swift */; };
+		E6F4B7401FB20DCDCA818615 /* EatEventData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062499E2417549F00D69DE89 /* EatEventData.swift */; };
 		EBC7F21107EA97707DD32B63 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C746DAB90987A23CE855E737 /* TimelineView.swift */; };
+		FA3FBF0C17F19E4D9CFB88E3 /* Baby.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3178793942252076A68D6DBA /* Baby.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,18 +49,38 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		062499E2417549F00D69DE89 /* EatEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EatEventData.swift; sourceTree = "<group>"; };
+		17CFCB90BA0856A8299E2815 /* FeedingValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedingValidator.swift; sourceTree = "<group>"; };
+		1A42F1BFF42D3ED6BF961B05 /* TimelineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineViewModel.swift; sourceTree = "<group>"; };
 		1D1B08BB3FA88A4437C63DB5 /* HushApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushApp.swift; sourceTree = "<group>"; };
+		2598B5112EAC69F530BEB9ED /* DiaperEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaperEventData.swift; sourceTree = "<group>"; };
+		3178793942252076A68D6DBA /* Baby.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Baby.swift; sourceTree = "<group>"; };
 		37257CF81E2F9FD6F0D99742 /* NowIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowIndicatorView.swift; sourceTree = "<group>"; };
+		38EBCD9DB048C1B19912F20B /* SleepValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepValidator.swift; sourceTree = "<group>"; };
+		3F5C0E7785826152626B6962 /* EventService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventService.swift; sourceTree = "<group>"; };
 		428EFFA032B82FE1AEDEE763 /* ActionButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButtonsView.swift; sourceTree = "<group>"; };
 		44E218FAC430CCAD578CC0E6 /* Hush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hush.entitlements; sourceTree = "<group>"; };
+		46168FFCAA59EC5DE16F2AE1 /* CDUser+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDUser+CoreDataClass.swift"; sourceTree = "<group>"; };
+		468FEF461A46DB1FC52C7C98 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		5275A62EB66F2174B229D4EF /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		5668848D5B607A9DF8642FE1 /* CDEvent+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDEvent+CoreDataClass.swift"; sourceTree = "<group>"; };
 		5EBACE11B7F7E810242BA2E4 /* MainScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreenView.swift; sourceTree = "<group>"; };
 		664D0852F7C4BB53CCD3F928 /* Hush.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Hush.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6B75677267242B05221EC19E /* Hush.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Hush.xcdatamodel; sourceTree = "<group>"; };
+		7376000B8C8AB2D0811F79B1 /* EventTimestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventTimestamp.swift; sourceTree = "<group>"; };
+		7BAE033A7A119A32904D9C3E /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
+		7D4EE7FA9F8E84D96390C4D7 /* EventRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventRepository.swift; sourceTree = "<group>"; };
 		88D5F1E34276D7F28423D584 /* HushTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HushTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		965B18386BA65FCFA4D5A60B /* CDBaby+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDBaby+CoreDataClass.swift"; sourceTree = "<group>"; };
+		A6BAF7EF82C9A33752FD8CBA /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
+		ACCFC4DEB0088DAF9902F6CB /* SleepEventData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepEventData.swift; sourceTree = "<group>"; };
 		B2B81F4EFE445757CB15C338 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B58BBEC95A4D7F9F084F9CA1 /* TopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBarView.swift; sourceTree = "<group>"; };
+		BB94852F433CB77C5AFC3815 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		C498D206E0AF6B2EDDF628E0 /* HushTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HushTests.swift; sourceTree = "<group>"; };
 		C746DAB90987A23CE855E737 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		D8532121F683C4C1ED8F4692 /* CDBabyCaregiver+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDBabyCaregiver+CoreDataClass.swift"; sourceTree = "<group>"; };
+		E4E2ECD8E2FD1B5759985BB9 /* BabyRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyRepository.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -48,6 +88,10 @@
 			isa = PBXGroup;
 			children = (
 				BE53FEEE003E55549BE1E18A /* EventData */,
+				3178793942252076A68D6DBA /* Baby.swift */,
+				7BAE033A7A119A32904D9C3E /* Event.swift */,
+				7376000B8C8AB2D0811F79B1 /* EventTimestamp.swift */,
+				468FEF461A46DB1FC52C7C98 /* User.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -82,6 +126,7 @@
 		353FFEC9F8642354689FBA99 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				3F5C0E7785826152626B6962 /* EventService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -106,6 +151,7 @@
 		4264348648C3F4436452F892 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				1A42F1BFF42D3ED6BF961B05 /* TimelineViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -129,6 +175,9 @@
 		742FE683A28F6F29418E55ED /* Repositories */ = {
 			isa = PBXGroup;
 			children = (
+				E4E2ECD8E2FD1B5759985BB9 /* BabyRepository.swift */,
+				7D4EE7FA9F8E84D96390C4D7 /* EventRepository.swift */,
+				A6BAF7EF82C9A33752FD8CBA /* UserRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -136,6 +185,8 @@
 		78617968F15326C05FA72AEC /* Validation */ = {
 			isa = PBXGroup;
 			children = (
+				17CFCB90BA0856A8299E2815 /* FeedingValidator.swift */,
+				38EBCD9DB048C1B19912F20B /* SleepValidator.swift */,
 			);
 			path = Validation;
 			sourceTree = "<group>";
@@ -167,6 +218,12 @@
 		ACB85D1B9A2A0A71308234CC /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
+				965B18386BA65FCFA4D5A60B /* CDBaby+CoreDataClass.swift */,
+				D8532121F683C4C1ED8F4692 /* CDBabyCaregiver+CoreDataClass.swift */,
+				5668848D5B607A9DF8642FE1 /* CDEvent+CoreDataClass.swift */,
+				46168FFCAA59EC5DE16F2AE1 /* CDUser+CoreDataClass.swift */,
+				A468B3FA925E20F530D59C6B /* Hush.xcdatamodeld */,
+				BB94852F433CB77C5AFC3815 /* PersistenceController.swift */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -181,6 +238,9 @@
 		BE53FEEE003E55549BE1E18A /* EventData */ = {
 			isa = PBXGroup;
 			children = (
+				2598B5112EAC69F530BEB9ED /* DiaperEventData.swift */,
+				062499E2417549F00D69DE89 /* EatEventData.swift */,
+				ACCFC4DEB0088DAF9902F6CB /* SleepEventData.swift */,
 			);
 			path = EventData;
 			sourceTree = "<group>";
@@ -332,12 +392,32 @@
 			buildActionMask = 2147483647;
 			files = (
 				0711386FD6E559198B2CED6F /* ActionButtonsView.swift in Sources */,
+				FA3FBF0C17F19E4D9CFB88E3 /* Baby.swift in Sources */,
+				8CFE6E9BB224D2705603140A /* BabyRepository.swift in Sources */,
+				DCFF0C741194AA983D5D2AC3 /* CDBaby+CoreDataClass.swift in Sources */,
+				13545C804CD3F468ABB3017A /* CDBabyCaregiver+CoreDataClass.swift in Sources */,
+				7ACB5328872BF05792520D92 /* CDEvent+CoreDataClass.swift in Sources */,
+				64E34A4D60FFD1939BA01AA5 /* CDUser+CoreDataClass.swift in Sources */,
 				D80FF656CCB3C344B576AF5C /* Colors.swift in Sources */,
+				B5E4DA54E3F3B3A1F03E3A54 /* DiaperEventData.swift in Sources */,
+				E6F4B7401FB20DCDCA818615 /* EatEventData.swift in Sources */,
+				CF01D0D4B5111133AE881CE4 /* Event.swift in Sources */,
+				B2FD08373D62BF6938ED6576 /* EventRepository.swift in Sources */,
+				383B07A4D1C719680CA19F65 /* EventService.swift in Sources */,
+				CEEAB8DDDCDA870F61C36385 /* EventTimestamp.swift in Sources */,
+				E15B9408B5F53DE7F3145DA9 /* FeedingValidator.swift in Sources */,
+				BBC70BFE38340D377A134D91 /* Hush.xcdatamodeld in Sources */,
 				679E7FB1E5248F080E391BB7 /* HushApp.swift in Sources */,
 				0471DF0151A8E7D0655A28A3 /* MainScreenView.swift in Sources */,
 				4924575F57311D0174B54382 /* NowIndicatorView.swift in Sources */,
+				9EBF9CD47AF645D6D7E3D433 /* PersistenceController.swift in Sources */,
+				D63905EFB1FC9B9704535B23 /* SleepEventData.swift in Sources */,
+				354673E3B8BCA689947B3ACB /* SleepValidator.swift in Sources */,
 				EBC7F21107EA97707DD32B63 /* TimelineView.swift in Sources */,
+				33D4C6A16F34C08FB6CA63A4 /* TimelineViewModel.swift in Sources */,
 				21C3141F92CA45517EAAEAD3 /* TopBarView.swift in Sources */,
+				62E4A0C9E3D4967F8B45FFBA /* User.swift in Sources */,
+				5F68629D137697AAD40FE30B /* UserRepository.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -610,6 +690,19 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		A468B3FA925E20F530D59C6B /* Hush.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				6B75677267242B05221EC19E /* Hush.xcdatamodel */,
+			);
+			currentVersion = 6B75677267242B05221EC19E /* Hush.xcdatamodel */;
+			path = Hush.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 0F21E0AB7C84BD6590133952 /* Project object */;
 }

@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct TopBarView: View {
+    let babyName: String
+    let onProfileTapped: () -> Void
+    let onBabyNameTapped: () -> Void
+
     var body: some View {
         HStack {
             // Profile icon (de-emphasized, left)
-            Button(action: {
-                // TODO: Open settings
-            }) {
+            Button(action: onProfileTapped) {
                 Image(systemName: "person.circle")
                     .font(.title2)
                     .foregroundStyle(.secondary)
@@ -15,10 +17,8 @@ struct TopBarView: View {
             Spacer()
 
             // Baby name (center, tappable for quick stats)
-            Button(action: {
-                // TODO: Show quick stats overlay
-            }) {
-                Text("Baby")
+            Button(action: onBabyNameTapped) {
+                Text(babyName)
                     .font(.headline)
                     .foregroundStyle(.primary)
             }
@@ -26,9 +26,7 @@ struct TopBarView: View {
             Spacer()
 
             // Sync status indicator (right)
-            Image(systemName: "checkmark.circle.fill")
-                .font(.title2)
-                .foregroundStyle(.green)
+            SyncStatusIndicator(status: .synced)
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
@@ -36,6 +34,38 @@ struct TopBarView: View {
     }
 }
 
+// MARK: - Sync Status
+
+enum SyncStatus {
+    case synced
+    case syncing
+    case offline
+}
+
+struct SyncStatusIndicator: View {
+    let status: SyncStatus
+
+    var body: some View {
+        switch status {
+        case .synced:
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title2)
+                .foregroundStyle(.green)
+        case .syncing:
+            ProgressView()
+                .controlSize(.small)
+        case .offline:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.title2)
+                .foregroundStyle(.orange)
+        }
+    }
+}
+
 #Preview {
-    TopBarView()
+    TopBarView(
+        babyName: "Emma",
+        onProfileTapped: {},
+        onBabyNameTapped: {}
+    )
 }

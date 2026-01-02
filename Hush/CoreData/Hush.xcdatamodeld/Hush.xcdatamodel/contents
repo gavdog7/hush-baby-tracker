@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23231" systemVersion="24B83" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="CDUser" representedClassName="CDUser" syncable="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="email" attributeType="String"/>
+        <attribute name="displayName" attributeType="String"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <fetchIndex name="byId">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="CDBaby" representedClassName="CDBaby" syncable="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="birthDate" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="primaryCaregiverId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="settingsJSON" attributeType="String" defaultValueString="{}"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="events" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDEvent" inverseName="baby" inverseEntity="CDEvent"/>
+        <relationship name="caregivers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDBabyCaregiver" inverseName="baby" inverseEntity="CDBabyCaregiver"/>
+        <fetchIndex name="byId">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="CDBabyCaregiver" representedClassName="CDBabyCaregiver" syncable="YES">
+        <attribute name="babyId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="userId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="role" attributeType="String"/>
+        <attribute name="joinedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="baby" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDBaby" inverseName="caregivers" inverseEntity="CDBaby"/>
+        <fetchIndex name="byBabyCaregiver" elementExpressions="babyId, userId">
+            <fetchIndexElement property="babyId" type="Binary" order="ascending"/>
+            <fetchIndexElement property="userId" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byUserId">
+            <fetchIndexElement property="userId" type="Binary" order="ascending"/>
+        </fetchIndex>
+    </entity>
+    <entity name="CDEvent" representedClassName="CDEvent" syncable="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="babyId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="loggedBy" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="eventType" attributeType="String"/>
+        <attribute name="startTimeUTC" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="startTimeTimezone" attributeType="String"/>
+        <attribute name="startTimeOffset" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="endTimeUTC" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="endTimeTimezone" optional="YES" attributeType="String"/>
+        <attribute name="endTimeOffset" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="dataJSON" attributeType="String" defaultValueString="{}"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="baby" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDBaby" inverseName="events" inverseEntity="CDBaby"/>
+        <fetchIndex name="byId">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byBabyTime">
+            <fetchIndexElement property="babyId" type="Binary" order="ascending"/>
+            <fetchIndexElement property="startTimeUTC" type="Binary" order="descending"/>
+        </fetchIndex>
+        <fetchIndex name="byBabyUpdated">
+            <fetchIndexElement property="babyId" type="Binary" order="ascending"/>
+            <fetchIndexElement property="updatedAt" type="Binary" order="descending"/>
+        </fetchIndex>
+    </entity>
+</model>
